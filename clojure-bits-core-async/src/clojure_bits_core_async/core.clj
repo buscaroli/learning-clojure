@@ -1,8 +1,15 @@
 (ns clojure-bits-core-async.core
+  (:gen-class)
   (:require [clojure.core.async :as async]))
 
+
+; Channels that serve drinks
 (def bar-chan (async/chan 10))
 (def pub-chan (async/chan 10))
+
+; Channel to store the received drink
+(def drink-chan (async/chan 10))
+
 
 (defn random-add []
 "Function used to simule the passing of time taken to perform an action."
@@ -26,4 +33,11 @@
   (request-pub-drink)
   (async/go (let [[val] (async/alts! [bar-chan
                                       pub-chan])]
-              (println val))))
+              (async/>! drink-chan val))))
+
+
+(defn -main [& args]
+  (println "Where's my drink?")
+  (request-drink)
+  (println (async/<!! drink-chan)))
+
